@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>積分ガチャ</title>
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f2f2f2;
+      padding: 15px;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    select, button {
+      width: 100%;
+      padding: 12px;
+      font-size: 1.1rem;
+      margin: 10px 0;
+      border-radius: 8px;
+    }
+    button {
+      background: #007aff;
+      color: white;
+      border: none;
+      font-weight: bold;
+    }
+    .problem {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .answer {
+      display: none;
+      margin-top: 8px;
+      color: #333;
+    }
+    .show {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🎰 積分ガチャ</h1>
+
+<select id="level">
+  <option value="easy">★ 初級</option>
+  <option value="normal">★★ 中級</option>
+  <option value="hard">★★★ 上級</option>
+</select>
+
+<button onclick="spin()">ガチャを回す</button>
+
+<div id="area"></div>
+
+<script>
+const problems = {
+  easy: [
+    { q: "$\\int x\\,dx$", a: "$\\frac{x^2}{2}+C$" },
+    { q: "$\\int \\sin x\\,dx$", a: "$-\\cos x + C$" },
+    { q: "$\\int e^x dx$", a: "$e^x + C$" }
+  ],
+  normal: [
+    { q: "$\\int x e^x dx$", a: "$x e^x - e^x + C$" },
+    { q: "$\\int x\\cos x dx$", a: "$x\\sin x + \\cos x + C$" }
+  ],
+  hard: [
+    { q: "$\\int_0^{\\pi} x\\sin x dx$", a: "$\\pi$" },
+    { q: "$\\int_{-1}^1 x^3 dx$", a: "$0$" }
+  ]
+};
+
+function spin(){
+  const level = document.getElementById("level").value;
+  const area = document.getElementById("area");
+  area.innerHTML = "";
+
+  for(let i=0;i<3;i++){
+    const p = problems[level][Math.floor(Math.random()*problems[level].length)];
+
+    const div = document.createElement("div");
+    div.className = "problem";
+    div.innerHTML = `
+      <div><strong>Q${i+1}</strong> ${p.q}</div>
+      <button onclick="this.nextElementSibling.classList.toggle('show')">
+        答えを見る
+      </button>
+      <div class="answer">${p.a}</div>
+    `;
+    area.appendChild(div);
+  }
+
+  MathJax.typeset();
+}
+</script>
+
+</body>
+</html>
