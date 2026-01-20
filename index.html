@@ -1,67 +1,55 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>積分ガチャ</title>
 
   <!-- MathJax -->
   <script>
     window.MathJax = {
-      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      tex: { inlineMath: [['$', '$']] },
       svg: { fontCache: 'global' }
     };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
 
   <style>
-    body {
-      font-family: system-ui, sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-    button {
-      font-size: 1.2rem;
-      padding: 10px 20px;
-      margin: 20px 0;
-    }
-    .box {
-      font-size: 1.3rem;
-      margin: 15px 0;
-      min-height: 2em;
-    }
+    body { text-align: center; font-family: sans-serif; padding: 20px; }
+    button { font-size: 1.2rem; padding: 10px 20px; }
+    .box { font-size: 1.3rem; margin: 15px 0; min-height: 2em; }
   </style>
 </head>
 <body>
 
-  <h1>🎲 積分ガチャ</h1>
+<h1>🎲 積分ガチャ</h1>
+<button onclick="spin()">ガチャを回す</button>
 
-  <button onclick="spin()">ガチャを回す</button>
+<div class="box" id="q"></div>
+<div class="box" id="a"></div>
 
-  <div class="box" id="question"></div>
-  <div class="box" id="answer"></div>
+<script>
+  // ★ 数式データ（$なし・\\厳守）
+  const data = [
+    { q: "\\int x\\,dx", a: "\\frac{x^2}{2}+C" },
+    { q: "\\int \\sin x\\,dx", a: "-\\cos x+C" },
+    { q: "\\int \\cos x\\,dx", a: "\\sin x+C" },
+    { q: "\\int \\sin x\\cos x\\,dx", a: "\\frac{1}{2}\\sin^2 x+C" },
+    { q: "\\int \\frac{1}{\\cos x}\\,dx", a: "\\ln|\\sec x+\\tan x|+C" }
+  ];
 
-  <script>
-    // ===== 問題データ（JSとして正しい形式）=====
-    const data = [
-      { q: "\\int x\\,dx", a: "\\frac{x^2}{2}+C" },
-      { q: "\\int \\sin x\\,dx", a: "-\\cos x+C" },
-      { q: "\\int \\cos x\\,dx", a: "\\sin x+C" },
-      { q: "\\int \\sin x\\cos x\\,dx", a: "\\frac{1}{2}\\sin^2 x+C" },
-      { q: "\\int \\frac{1}{\\cos x}\\,dx", a: "\\ln|\\sec x+\\tan x|+C" }
-    ];
+  function spin() {
+    const i = Math.floor(Math.random() * data.length);
 
-    function spin() {
-      const i = Math.floor(Math.random() * data.length);
-      document.getElementById("question").innerHTML =
-        "問題：$" + data[i].q + "$";
-      document.getElementById("answer").innerHTML =
-        "答え：$" + data[i].a + "$";
+    document.getElementById("q").innerHTML =
+      "問題：$" + data[i].q + "$";
 
-      // MathJax 再描画（超重要）
-      MathJax.typesetPromise();
-    }
-  </script>
+    document.getElementById("a").innerHTML =
+      "答え：$" + data[i].a + "$";
+
+    MathJax.typesetPromise(); // ★ これがないと再描画されない
+  }
+</script>
 
 </body>
 </html>
