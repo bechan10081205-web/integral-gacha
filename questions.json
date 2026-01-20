@@ -1,0 +1,6 @@
+[
+  { "q": "\\int x\\,dx", "a": "\\frac{x^2}{2}+C", "level": "easy" },
+  { "q": "\\int \\sin x\\,dx", "a": "-\\cos x+C", "level": "easy" },
+  { "q": "\\int x\\sin x\\,dx", "a": "-x\\cos x+\\sin x+C", "level": "normal" },
+  { "q": "\\int \\frac{1}{\\cos x}\\,dx", "a": "\\ln|\\sec x+\\tan x|+C", "level": "hard" }
+]
