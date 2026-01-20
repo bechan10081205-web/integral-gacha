@@ -41,36 +41,106 @@ button.sub { background:#16a34a; }
 </div>
 
 <script>
-let data = [];
-let current = null;
+/* ===== 共通 ===== */
+function randInt(a, b) {
+  return Math.floor(Math.random() * (b - a + 1)) + a;
+}
 
-// JSON読み込み
-fetch("questions.json")
-  .then(r => r.json())
-  .then(json => data = json)
-  .catch(() => alert("questions.json が読み込めません"));
+/* ===== 積分生成（既存仕様そのまま）===== */
+function generate(level) {
 
-document.getElementById("spinBtn").addEventListener("click", () => {
-  if (data.length === 0) return;
+  // easy
+  if (level === "easy") {
+    const t = randInt(1, 3);
+    const a = randInt(1, 5);
 
+    if (t === 1)
+      return { q:`\\int \\sin(${a}x)\\,dx`,
+               a:`-\\frac{1}{${a}}\\cos(${a}x)+C` };
+
+    if (t === 2)
+      return { q:`\\int \\cos(${a}x)\\,dx`,
+               a:`\\frac{1}{${a}}\\sin(${a}x)+C` };
+
+    return { q:`\\int \\frac{1}{x}\\,dx`,
+             a:`\\log|x|+C` };
+  }
+
+  // normal
+  if (level === "normal") {
+    const t = randInt(1, 2);
+
+    if (t === 1)
+      return { q:`\\int_1^e \\log x\\,dx`,
+               a:`1` };
+
+    const a = randInt(1, 4);
+    return { q:`\\int_0^\\pi \\sin(${a}x)\\,dx`,
+             a:`\\frac{2}{${a}}` };
+  }
+
+  // hard
+  const a = randInt(1, 3);
+  return {
+    q:`\\int_0^\\pi x\\sin(${a}x)\\,dx`,
+    a:`\\frac{\\pi}{${a}}`
+  };
+}
+
+/* ===== 通常ガチャ ===== */
+function spin() {
   const level = document.getElementById("level").value;
-  const pool = data.filter(d => d.level === level);
-  if (pool.length === 0) return;
+  const p = generate(level);
 
-  current = pool[Math.floor(Math.random() * pool.length)];
+  document.getElementById("question").innerHTML = `$$${p.q}$$`;
+  document.getElementById("answer").innerHTML = `$$${p.a}$$`;
+  document.getElementById("answer").style.display = "none";
 
-  q.innerHTML = "問題：$" + current.q + "$";
-  a.innerHTML = "答え：$" + current.a + "$";
-  a.style.display = "none";
+  MathJax.typeset();
+}
 
-  if (window.MathJax) MathJax.typesetPromise();
-});
+/* ===== 5問学習モード（easy2 normal2 hard1）===== */
+let studyIndex = 0;
+const studyLevels = ["easy", "easy", "normal", "normal", "hard"];
 
-document.getElementById("ansBtn").addEventListener("click", () => {
-  if (!current) return;
-  a.style.display = (a.style.display === "none") ? "block" : "none";
-  if (window.MathJax) MathJax.typesetPromise();
-});
+function startStudy() {
+  studyIndex = 0;
+  nextStudy();
+}
+
+function nextStudy() {
+  if (studyIndex >= studyLevels.length) {
+    document.getElementById("question").innerHTML =
+      "🎉 5問終了！おつかれさま";
+    document.getElementById("answer").style.display = "none";
+    MathJax.typeset();
+    return;
+  }
+
+  const level = studyLevels[studyIndex];
+  const p = generate(level);
+
+  document.getElementById("question").innerHTML =
+    `【${studyIndex + 1}/5｜${level.toUpperCase()}】<br>$$${p.q}$$`;
+  document.getElementById("answer").innerHTML = `$$${p.a}$$`;
+  document.getElementById("answer").style.display = "none";
+
+  studyIndex++;
+  MathJax.typeset();
+}
+
+/* ===== 答え表示 ===== */
+function toggleAnswer() {
+  const a = document.getElementById("answer");
+
+  if (a.style.display === "none") {
+    a.style.display = "block";
+  } else {
+    a.style.display = "none";
+    nextStudy();
+  }
+}
 </script>
+
 </body>
 </html>
