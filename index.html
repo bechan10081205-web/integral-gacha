@@ -113,7 +113,7 @@ function spin(){
   document.getElementById("question").innerHTML=`$$${p.q}$$`;
   document.getElementById("answer").innerHTML=`$$${p.a}$$`;
   document.getElementById("answer").style.display="none";
-  MathJax.typeset();
+  MathJax.typesetPromise();
 }
 
 /* ===== 5問まとめ学習モード ===== */
@@ -121,29 +121,34 @@ function startStudyBatch(){
   const studyLevels=["easy","easy","normal","normal","hard"];
   const container=document.getElementById("studyBatch");
   container.innerHTML="";
+
   studyLevels.forEach((level,i)=>{
     const p=generate(level);
     const div=document.createElement("div");
     div.style.border="1px solid #ccc";
     div.style.padding="8px";
     div.style.marginBottom="8px";
+
     div.innerHTML=`
       <strong>${i+1}/5｜${level.toUpperCase()}</strong><br>
-      $$${p.q}$$
+      <span class="question">$$${p.q}$$</span>
       <div style="margin-top:4px;">
-        <button onclick="toggleAnswerDiv(this)">👀 答え表示</button>
+        <button class="showAnswer">👀 答え表示</button>
         <div class="answer" style="display:none;">$$${p.a}$$</div>
       </div>
     `;
     container.appendChild(div);
   });
-  MathJax.typeset();
-}
 
-function toggleAnswerDiv(btn){
-  const ans=btn.nextElementSibling;
-  if(ans.style.display==="none"){ ans.style.display="block"; MathJax.typeset(); }
-  else { ans.style.display="none"; }
+  MathJax.typesetPromise().then(()=>{
+    container.querySelectorAll(".showAnswer").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const ansDiv=btn.nextElementSibling;
+        if(ansDiv.style.display==="none"){ ansDiv.style.display="block"; MathJax.typesetPromise(); }
+        else { ansDiv.style.display="none"; }
+      });
+    });
+  });
 }
 
 /* ===== オリジナル問題編集 ===== */
