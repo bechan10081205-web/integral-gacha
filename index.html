@@ -3,109 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>積分ガチャ</title>
-
-<!-- MathJax -->
-<script>
-  window.MathJax = {
-    tex: { inlineMath: [['$', '$']] },
-    svg: { fontCache: 'global' }
-  };
-</script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-
-<style>
-body {
-  font-family: system-ui, sans-serif;
-  background: #f5f5f5;
-  margin: 0;
-  padding: 16px;
-}
-.container {
-  max-width: 480px;
-  margin: auto;
-  background: #fff;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-h1 { text-align: center; }
-select, button {
-  width: 100%;
-  padding: 12px;
-  font-size: 1.1rem;
-  margin-top: 10px;
-}
-button {
-  background: #4f46e5;
-  color: white;
-  border: none;
-  border-radius: 8px;
-}
-button.sub {
-  background: #16a34a;
-}
-.box {
-  margin-top: 16px;
-  font-size: 1.2rem;
-  min-height: 2em;
-}
-</style>
+<title>テストガチャ</title>
 </head>
-
 <body>
-<div class="container">
-  <h1>🎲 積分ガチャ</h1>
 
-  <select id="level">
-    <option value="easy">★ 易しい</option>
-    <option value="normal">★★ 普通</option>
-    <option value="hard">★★★ 難しい</option>
-  </select>
-
-  <button onclick="spin()">ガチャを回す</button>
-  <button class="sub" onclick="toggleAnswer()">答えを表示 / 非表示</button>
-
-  <div class="box" id="q"></div>
-  <div class="box" id="a" style="display:none;"></div>
-</div>
+<button id="btn">ガチャ</button>
+<div id="out"></div>
 
 <script>
-const data = [
-  { q: "\\int x\\,dx", a: "\\frac{x^2}{2}+C", level: "easy" },
-  { q: "\\int \\sin x\\,dx", a: "-\\cos x+C", level: "easy" },
-  { q: "\\int \\cos x\\,dx", a: "\\sin x+C", level: "easy" },
+  const data = [
+    "∫ x dx",
+    "∫ sin x dx",
+    "∫ cos x dx"
+  ];
 
-  { q: "\\int x\\sin x\\,dx", a: "-x\\cos x+\\sin x+C", level: "normal" },
-  { q: "\\int \\sin x\\cos x\\,dx", a: "\\frac12\\sin^2 x+C", level: "normal" },
-
-  { q: "\\int \\frac{1}{\\cos x}\\,dx", a: "\\ln|\\sec x+\\tan x|+C", level: "hard" }
-];
-
-let current = null;
-
-function spin() {
-  const level = document.getElementById("level").value;
-  const pool = data.filter(d => d.level === level);
-  if (pool.length === 0) return;
-
-  current = pool[Math.floor(Math.random() * pool.length)];
-
-  document.getElementById("q").innerHTML =
-    "問題：$" + current.q + "$";
-  document.getElementById("a").innerHTML =
-    "答え：$" + current.a + "$";
-  document.getElementById("a").style.display = "none";
-
-  if (window.MathJax) MathJax.typesetPromise();
-}
-
-function toggleAnswer() {
-  if (!current) return;
-  const a = document.getElementById("a");
-  a.style.display = (a.style.display === "none") ? "block" : "none";
-  if (window.MathJax) MathJax.typesetPromise();
-}
+  document.getElementById("btn").addEventListener("click", () => {
+    const i = Math.floor(Math.random() * data.length);
+    document.getElementById("out").textContent = data[i];
+  });
 </script>
+
 </body>
 </html>
