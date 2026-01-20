@@ -16,10 +16,12 @@ window.MathJax = {
 <style>
 body { font-family: system-ui, sans-serif; background:#f5f5f5; padding:16px; }
 .container { max-width:480px; margin:auto; background:#fff; padding:16px; border-radius:12px; }
-button, select { width:100%; padding:12px; font-size:1.1rem; margin-top:10px; }
+button, select, input { width:100%; padding:10px; font-size:1.1rem; margin-top:10px; }
 button { background:#4f46e5; color:#fff; border:none; border-radius:8px; }
 button.sub { background:#16a34a; }
-.box { margin-top:16px; font-size:1.3rem; min-height:2em; }
+.box { margin-top:16px; font-size:1.2rem; min-height:2em; }
+table { width:100%; border-collapse:collapse; margin-top:10px; }
+th, td { border:1px solid #ccc; padding:4px; text-align:left; font-size:0.95rem; }
 </style>
 </head>
 
@@ -27,44 +29,61 @@ button.sub { background:#16a34a; }
 <div class="container">
   <h1>🎲 積分ガチャ</h1>
 
+  <!-- 通常ガチャ -->
   <select id="level">
     <option value="easy">★ 易しい</option>
     <option value="normal">★★ 普通</option>
     <option value="hard">★★★ 難しい</option>
   </select>
-
   <button onclick="spin()">🎲 ガチャを回す</button>
-  <button onclick="startStudy()">📘 5問学習モード</button>
-  <button onclick="toggleAnswer()" class="sub">👀 答え表示 / 次へ</button>
-
   <div id="question" class="box"></div>
   <div id="answer" class="box" style="display:none;"></div>
+
+  <!-- 5問まとめ学習モード -->
+  <button onclick="startStudyBatch()">📘 5問まとめ学習モード</button>
+  <div id="studyBatch" class="box"></div>
+
+  <!-- オリジナル問題追加UI -->
+  <h2>📝 オリジナル問題編集</h2>
+  <input id="newQ" placeholder="問題文 q">
+  <input id="newA" placeholder="答え a">
+  <select id="newLevel">
+    <option value="easy">easy</option>
+    <option value="normal">normal</option>
+    <option value="hard">hard</option>
+  </select>
+  <button onclick="addQuestion()">追加</button>
+
+  <table id="qTable">
+    <thead><tr><th>難易度</th><th>問題</th><th>答え</th><th>削除</th></tr></thead>
+    <tbody></tbody>
+  </table>
 </div>
 
 <script>
-/* ===== 内部JSON問題プール ===== */
-const questionDB = {
-  "easy":[
-    { "q":"\\int \\sin x\\,dx", "a":"-\\cos x + C" },
-    { "q":"\\int \\frac{1}{x}\\,dx", "a":"\\log|x| + C" }
+/* ===== 内部JSON ===== */
+let questionDB = {
+  easy:[
+    {q:"\\int \\sin x\\,dx",a:"-\\cos x + C"},
+    {q:"\\int \\frac{1}{x}\\,dx",a:"\\log|x| + C"}
   ],
-  "normal":[
-    { "q":"\\int_0^\\pi \\sin x\\,dx", "a":"2" },
-    { "q":"\\int_1^e \\log x\\,dx", "a":"1" }
+  normal:[
+    {q:"\\int_0^\\pi \\sin x\\,dx",a:"2"},
+    {q:"\\int_1^e \\log x\\,dx",a:"1"}
   ],
-  "hard":[
-    { "q":"\\int_0^\\pi x\\sin x\\,dx", "a":"\\pi" }
+  hard:[
+    {q:"\\int_0^\\pi x\\sin x\\,dx",a:"\\pi"}
   ]
 };
 
-/* ===== 共通関数 ===== */
+/* ===== 共通 ===== */
 function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function generateFromJSON(level){
   const list = questionDB[level];
   return list[Math.floor(Math.random()*list.length)];
 }
 
-/* ===== 自動生成（既存） ===== */
+/* ===== 自動生成 ===== */
 function generateAuto(level){
   if(level==="easy"){
     const t=randInt(1,3),a=randInt(1,5);
@@ -81,9 +100,8 @@ function generateAuto(level){
   return {q:`\\int_0^\\pi x\\sin(${a}x)\\,dx`,a:`\\frac{\\pi}{${a}}`};
 }
 
-/* ===== メイン生成関数 ===== */
+/* ===== 生成メイン ===== */
 function generate(level){
-  // 50%でJSON, 50%で自動生成
   if(Math.random()<0.5) return generateFromJSON(level);
   return generateAuto(level);
 }
@@ -98,34 +116,71 @@ function spin(){
   MathJax.typeset();
 }
 
-/* ===== 5問学習モード（easy2 normal2 hard1）===== */
-let studyIndex=0;
-const studyLevels=["easy","easy","normal","normal","hard"];
-
-function startStudy(){ studyIndex=0; nextStudy(); }
-
-function nextStudy(){
-  if(studyIndex>=studyLevels.length){
-    document.getElementById("question").innerHTML="🎉 5問終了！おつかれさま";
-    document.getElementById("answer").style.display="none";
-    MathJax.typeset();
-    return;
-  }
-  const level=studyLevels[studyIndex];
-  const p=generate(level);
-  document.getElementById("question").innerHTML=`【${studyIndex+1}/5｜${level.toUpperCase()}】<br>$$${p.q}$$`;
-  document.getElementById("answer").innerHTML=`$$${p.a}$$`;
-  document.getElementById("answer").style.display="none";
-  studyIndex++;
+/* ===== 5問まとめ学習モード ===== */
+function startStudyBatch(){
+  const studyLevels=["easy","easy","normal","normal","hard"];
+  const container=document.getElementById("studyBatch");
+  container.innerHTML="";
+  studyLevels.forEach((level,i)=>{
+    const p=generate(level);
+    const div=document.createElement("div");
+    div.style.border="1px solid #ccc";
+    div.style.padding="8px";
+    div.style.marginBottom="8px";
+    div.innerHTML=`
+      <strong>${i+1}/5｜${level.toUpperCase()}</strong><br>
+      $$${p.q}$$
+      <div style="margin-top:4px;">
+        <button onclick="toggleAnswerDiv(this)">👀 答え表示</button>
+        <div class="answer" style="display:none;">$$${p.a}$$</div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
   MathJax.typeset();
 }
 
-/* ===== 答え表示 ===== */
-function toggleAnswer(){
-  const a=document.getElementById("answer");
-  if(a.style.display==="none"){ a.style.display="block"; MathJax.typeset(); }
-  else { a.style.display="none"; nextStudy(); }
+function toggleAnswerDiv(btn){
+  const ans=btn.nextElementSibling;
+  if(ans.style.display==="none"){ ans.style.display="block"; MathJax.typeset(); }
+  else { ans.style.display="none"; }
 }
+
+/* ===== オリジナル問題編集 ===== */
+function refreshTable(){
+  const tbody=document.querySelector("#qTable tbody");
+  tbody.innerHTML="";
+  ["easy","normal","hard"].forEach(level=>{
+    questionDB[level].forEach((q,i)=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${level}</td>
+                    <td>${q.q}</td>
+                    <td>${q.a}</td>
+                    <td><button onclick="deleteQuestion('${level}',${i})">削除</button></td>`;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function addQuestion(){
+  const q=document.getElementById("newQ").value;
+  const a=document.getElementById("newA").value;
+  const level=document.getElementById("newLevel").value;
+  if(q && a){
+    questionDB[level].push({q,a});
+    refreshTable();
+    document.getElementById("newQ").value="";
+    document.getElementById("newA").value="";
+  }
+}
+
+function deleteQuestion(level,index){
+  questionDB[level].splice(index,1);
+  refreshTable();
+}
+
+// 初期表示
+refreshTable();
 </script>
 
 </body>
